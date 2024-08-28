@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const CategoryList = () => {
+const CategoryList = async () => {
+  // 2:39:35
   return (
     <div className="px-4 overflow-x-scroll scrollbar-hide">
       <div className="flex gap-4 md:gap-8">
