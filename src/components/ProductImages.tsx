@@ -3,62 +3,61 @@
 import Image from "next/image";
 import { useState } from "react";
 
-const images = [
-  {
-    id: 1,
-    src: "https://placehold.co/600x400/png",
-    alt: "",
-    priority: true,
-  },
-  {
-    id: 2,
-    src: "https://placehold.co/600x400/png",
-    alt: "",
-    priority: false,
-  },
-  {
-    id: 3,
-    src: "https://placehold.co/600x400/png",
-    alt: "",
-    priority: false,
-  },
-  {
-    id: 4,
-    src: "https://placehold.co/600x400/png",
-    alt: "",
-    priority: false,
-  },
-];
+// const images = [
+//   {
+//     id: 1,
+//     src: "https://placehold.co/600x400/png",
+//     alt: "",
+//     priority: true,
+//   },
+//   {
+//     id: 2,
+//     src: "https://placehold.co/600x400/png",
+//     alt: "",
+//     priority: false,
+//   },
+//   {
+//     id: 3,
+//     src: "https://placehold.co/600x400/png",
+//     alt: "",
+//     priority: false,
+//   },
+//   {
+//     id: 4,
+//     src: "https://placehold.co/600x400/png",
+//     alt: "",
+//     priority: false,
+//   },
+// ];
 
-const ProductImages = () => {
-  const [activeImage, setActiveImage] = useState(0);
+const ProductImages = ({ items }: { items: any }) => {
+  const [index, setIndex] = useState(0);
 
   return (
     <div className="">
       <div className="h-[500px] relative">
         <Image
-          src={images[activeImage].src}
-          fill 
+          src={items[index].image?.url}
+          fill
           sizes="50vw"
           className="object-cover rounded-md"
-          alt=""
+          alt={items.name}
           priority={true}
         />
       </div>
       <div className="flex justify-between gap-4 mt-8">
-        {images.map((image, index) => (
+        {items.map((item: any, i: number) => (
           <div
             className="w-1/4 h-32 relative gap-4 mt-8 cursor-pointer"
-            key={image.id}
-            onClick={() => setActiveImage(index)}
+            key={item._id}
+            onClick={() => setIndex(i)}
           >
             <Image
-              src={image.src}
+              src={item.image?.url}
               fill
               sizes="30vw"
               className="object-cover rounded-md"
-              alt=""
-              priority={image.priority}
+              alt={item.name}
             />
           </div>
         ))}
