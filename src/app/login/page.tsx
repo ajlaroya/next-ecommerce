@@ -1,6 +1,9 @@
 "use client";
 
 import { useWixClient } from "@/hooks/useWixClient";
+import { LoginState } from "@wix/sdk";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 enum MODE {
@@ -21,6 +24,14 @@ const Login = () => {
   const [message, setMessage] = useState("");
 
   const pathName = window.location.href;
+  const router = useRouter();
+
+  const wixClient = useWixClient();
+  const isLoggedIn = wixClient.auth.loggedIn();
+
+  if (isLoggedIn) {
+    router.push("/");
+  }
 
   const formTitle =
     mode === MODE.LOGIN
@@ -39,8 +50,6 @@ const Login = () => {
       : mode === MODE.RESET_PASSWORD
       ? "Reset Password"
       : "Verify Email";
-
-  const wixClient = useWixClient();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -71,6 +80,7 @@ const Login = () => {
             email,
             pathName
           );
+          setMessage("Password reset email sent. Check your inbox.");
           break;
         case MODE.EMAIL_VERIFICATION:
           response = await wixClient.auth.processVerification({
@@ -81,7 +91,40 @@ const Login = () => {
           break;
       }
 
-      // 4:03:32
+      switch (response?.loginState) {
+        case LoginState.SUCCESS:
+          setMessage("Login successful!");
+          const tokens = await wixClient.auth.getMemberTokensForDirectLogin(
+            response.data.sessionToken
+          );
+
+          Cookies.set("refreshToken", JSON.stringify(tokens.refreshToken), {
+            expires: 2,
+          });
+          wixClient.auth.setTokens(tokens);
+          router.push("/");
+          break;
+        case LoginState.FAILURE:
+          if (
+            response.errorCode === "invalidEmail" ||
+            response.errorCode === "invalidPassword"
+          ) {
+            setError("Invalid email or password");
+          } else if (response.errorCode === "emailAlreadyExists") {
+            setError("Email already exists");
+          } else if (response.errorCode === "resetPassword") {
+            setError("Please reset your password");
+          } else {
+            setError("Something went wrong!");
+          }
+          break;
+        case LoginState.EMAIL_VERIFICATION_REQUIRED:
+          setMode(MODE.EMAIL_VERIFICATION);
+        case LoginState.OWNER_APPROVAL_REQUIRED:
+          setMessage("Your account is pending approval");
+        default:
+          break;
+      }
     } catch (error) {
       console.log(error);
       setError("Something went wrong!");
