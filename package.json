@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@wix/ecom": "^1.0.737",
+    "@wix/redirects": "^1.0.55",
     "@wix/sdk": "^1.12.12",
     "@wix/stores": "^1.0.193",
     "isomorphic-dompurify": "^2.15.0",
