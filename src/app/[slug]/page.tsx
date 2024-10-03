@@ -2,6 +2,7 @@ import Add from "@/components/Add";
 import CustomiseProducts from "@/components/CustomiseProducts";
 import ProductImages from "@/components/ProductImages";
 import { wixClientServer } from "@/lib/wixClientServer";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 
 const SinglePage = async ({ params }: { params: { slug: string } }) => {
@@ -18,7 +19,11 @@ const SinglePage = async ({ params }: { params: { slug: string } }) => {
 
   const product = products.items[0];
 
-  // 2:50:45
+  const reviewRes = await fetch(
+    `https://api.fera.ai/v3/public/reviews?product.id=${product._id}&public_key${process.env.NEXT_PUBLIC_FERA_ID}`
+  );
+
+  const reviews = await reviewRes.json();
 
   return (
     <div className="px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-64 relative flex flex-col lg:flex-row gap-16">
@@ -56,13 +61,58 @@ const SinglePage = async ({ params }: { params: { slug: string } }) => {
             productOptions={product.productOptions}
           />
         ) : (
-          <Add />
+          <Add
+            productId={product._id!}
+            variantId="00000000-0000-0000-0000-000000000000"
+            stockNumber={product.stock?.quantity || 0}
+          />
         )}
-        <div className="h-[2px] bg-gray-100" />
         {product.additionalInfoSections?.map((section: any) => (
           <div className="text-sm" key={section.title}>
             <h4 className="font-medium mb-4">{section.title}</h4>
             <p>{section.description}</p>
+          </div>
+        ))}
+        <div className="h-[2px] bg-gray-100" />
+        {/* reviews */}
+        <h1 className="text-2xl font-medium">User Reviews</h1>
+        {reviews.data.map((review: any) => (
+          <div className="flex flex-col gap-4" key={review.id}>
+            <div className="flex items-center gap-4 font-medium">
+              <Image
+                src={review.customer.avatar_url}
+                alt="customer avatar"
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+              <span>{review.customer.display_name}</span>
+            </div>
+            <div className="flex gap-2">
+              {Array.from({ length: review.rating }).map((_, i) => (
+                <Image
+                  key={i}
+                  src={"/star.png"}
+                  alt="star"
+                  width={16}
+                  height={16}
+                />
+              ))}
+            </div>
+            {review.heading && <p>{review.heading}</p>}
+            {review.body && <p>{review.heading}</p>}
+            <div className="">
+              {review.media.map((media: any) => (
+                <Image
+                  key={media.id}
+                  src={media.url}
+                  alt="review image"
+                  width={200}
+                  height={200}
+                  className="object-cover"
+                />
+              ))}
+            </div>
           </div>
         ))}
       </div>
